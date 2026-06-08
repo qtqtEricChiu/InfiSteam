@@ -1,0 +1,27 @@
+========================================
+ QFluentWidgets 安装和使用说明
+========================================
+
+【步骤1：安装依赖】
+在命令行中运行以下命令：
+
+pip install PySide6
+pip install "PySide6-Fluent-Widgets[full]" -i https://pypi.org/simple/
+
+【步骤2：测试运行】
+安装完成后，运行：
+python infi-gui-fluent.py
+
+【步骤3：编译为 EXE】
+如果测试正常，运行：
+pyinstaller --onefile --windowed --name=infi-gui-fluent --add-data "infi-manager.ps1;." --add-data "config.json;." --add-data "ico.ico;." --icon="ico.ico" --hidden-import=qfluentwidgets --collect-all qfluentwidgets infi-gui-fluent.py
+
+【注意事项】
+1. 不要同时安装 PyQt6-Fluent-Widgets 和 PySide6-Fluent-Widgets
+2. 如果已安装 PyQt 版本，先卸载：pip uninstall PyQt6-Fluent-Widgets
+3. 只安装 PySide6 版本
+
+【文件说明】
+- infi-gui-fluent.py - QFluentWidgets 版本主程序
+- infi-gui-modern.py - CustomTkinter 版本（备用）
+- infi-gui.py - 原版（已修复路径问题）

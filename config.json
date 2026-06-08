@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "Infinity Nikki",
+    "appid": "3164330",
+    "description": "无限暖暖 - Steam中国版 (sub/1221922)"
+  },
+  "standalone_launcher": {
+    "enabled": true,
+    "search_paths": [
+      "D:\\Entertainment\\InfinityNikkiLauncher",
+      "C:\\InfinityNikkiLauncher",
+      "${ProgramFiles}\\InfinityNikkiLauncher",
+      "${ProgramFiles(x86)}\\InfinityNikkiLauncher",
+      "${LOCALAPPDATA}\\InfinityNikkiLauncher"
+    ],
+    "config_file": "config.ini",
+    "launcher_exe": "launcher.exe"
+  },
+  "paths": {
+    "steam_root": "auto",
+    "game_dir": "auto",
+    "acf_file": "auto"
+  },
+  "depots": {
+    "3164332": {
+      "description": "Infinity Nikki Content (Windows - China)",
+      "install_script": "InfinityNikki\\X6Game\\installscript\\installscript.vdf"
+    }
+  },
+  "skeleton": {
+    "keep_files": [
+      "launcher.exe",
+      "msvcp140.dll",
+      "vcruntime140.dll",
+      "vcruntime140_1.dll",
+      "steam_appid.txt"
+    ],
+    "keep_dirs": [
+      "InfinityNikki",
+      "1.3.0"
+    ],
+    "move_dirs": [
+      "InfinityNikki\\X6Game"
+    ],
+    "delete_files": []
+  },
+  "steamdb": {
+    "app_url": "https://steamdb.info/app/3164330/",
+    "sub_url": "https://steamdb.info/sub/1221922/",
+    "depot_url_template": "https://steamdb.info/depot/{depotid}/manifests/"
+  }
+}

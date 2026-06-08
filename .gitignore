@@ -1,0 +1,16 @@
+# Release build artifacts
+build/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.vs/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
