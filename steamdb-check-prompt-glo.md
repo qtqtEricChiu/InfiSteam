@@ -1,5 +1,9 @@
 # 无限暖暖 Steam 版本状态检测与修复流程（通用版）
 
+> **Agent 前置提醒**：在开始本流程之前，必须提示用户先在 Steam 客户端内完成以下设置，否则 ACF 锁定后 Steam 仍可能在启动时自动触发更新检查：
+> **游戏库 → 右键游戏 → 属性 → 更新 → 自动更新 → 设为「等到我启动游戏时」**
+> 此设置为纯客户端侧建议，Agent 仅负责口头提醒，无需代为操作。
+
 ## 任务目标
 检测并修复无限暖暖（AppID: 3164330）的 Steam 版本状态，确保 ACF 文件配置正确、版本最新、且已锁定只读防止 Steam 自动更新。本流程适用于任何用户的电脑，所有路径均为相对路径或自动检测。
 
@@ -353,6 +357,28 @@ if (Test-Path $managerScript) {
 }
 ```
 
+### 步骤 10：关闭 Chrome 窗口
+```powershell
+# 仅关闭本流程打开的 SteamDB 专用 Chrome 实例，不影响机主其他 Chrome 窗口
+# 通过命令行参数精确匹配：remote-debugging-port=9222 且 chrome-profile-steamdb
+$targetChromes = Get-Process -Name "chrome" -ErrorAction SilentlyContinue | Where-Object {
+    $cmd = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)").CommandLine
+    $cmd -match "remote-debugging-port=9222" -and $cmd -match "chrome-profile-steamdb"
+}
+
+if ($targetChromes) {
+    foreach ($p in $targetChromes) {
+        Stop-Process -Id $p.Id -Force
+        Write-Host "  已关闭 Chrome 进程 (PID: $($p.Id))" -ForegroundColor Gray
+    }
+    Write-Host "  [OK] SteamDB 专用 Chrome 已关闭" -ForegroundColor Green
+} else {
+    Write-Host "  [i] 未找到需要关闭的 Chrome 实例" -ForegroundColor Gray
+}
+```
+
+> **Agent 执行提醒**：在流程全部完成后，必须主动向用户询问是否清理本次生成的 Chrome 用户文件夹（`chrome-profile-steamdb/`）。该文件夹包含 SteamDB 的缓存和 Cookie，若用户不再需要或出于隐私考虑，应将其删除。用 `ask_user` 或自然语言提示即可，格式示例：「本次检测生成的 Chrome 临时用户文件夹需要清理吗？」
+
 ---
 
 ## 非 Steam 版本启动器检测与配置建议
@@ -506,6 +532,11 @@ ACF 只读锁定: [是/否] [✅/❌]
 
 最终结论: [版本已最新 / 已更新 / 需要手动处理]
 ```
+
+> **Agent 恢复指引**：检测报告输出完毕后，Agent 应向用户说明如何恢复到更新前的原始状态（用户可能需要回退）：
+> 1. 由 AI Agent 解除 ACF 只读，将 buildid、manifest、StateFlags、AutoUpdateBehavior、TargetBuildID 等字段恢复为原始值
+> 2. 重启 Steam 客户端
+> 3. 若重启后 Steam 库中未显示「待更新」，手动前往 **游戏库 → 右键游戏 → 属性 → 已安装文件 → 验证游戏文件的完整性** 触发 Steam 重新识别版本
 
 ---
 
