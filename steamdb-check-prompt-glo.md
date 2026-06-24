@@ -161,6 +161,32 @@ $stateFlags = [regex]::Match($acfContent, '"StateFlags"\s+"(\d+)"').Groups[1].Va
 $targetBuildID = [regex]::Match($acfContent, '"TargetBuildID"\s+"(\d+)"').Groups[1].Value
 $autoUpdate = [regex]::Match($acfContent, '"AutoUpdateBehavior"\s+"(\d+)"').Groups[1].Value
 $bytesToDownload = [regex]::Match($acfContent, '"BytesToDownload"\s+"(\d+)"').Groups[1].Value
+$bytesToStage = [regex]::Match($acfContent, '"BytesToStage"\s+"(\d+)"').Groups[1].Value
+$bytesStaged = [regex]::Match($acfContent, '"BytesStaged"\s+"(\d+)"').Groups[1].Value
+```
+
+### 步骤 2.5：检查残留文件
+```powershell
+# 查找所有与 3164330 相关的残留文件
+$relatedFiles = Get-ChildItem -Path $steamapps -Filter "*3164330*" -Recurse -ErrorAction SilentlyContinue
+if ($relatedFiles) {
+    Write-Host "[WARN] 发现以下 3164330 相关残留文件：" -ForegroundColor Yellow
+    foreach ($f in $relatedFiles) {
+        Write-Host "  $($f.FullName) ($($f.Length) bytes)"
+    }
+}
+
+# 检查 downloading 目录
+$dlDir = Join-Path $steamapps "downloading\3164330"
+if (Test-Path $dlDir) {
+    Write-Host "[WARN] 发现 downloading 残留目录: $dlDir" -ForegroundColor Yellow
+}
+
+# 检查 temp 目录
+$tempDir = Join-Path $steamapps "temp\3164330"
+if (Test-Path $tempDir) {
+    Write-Host "[WARN] 发现 temp 残留目录: $tempDir" -ForegroundColor Yellow
+}
 ```
 
 ### 步骤 3：创建/使用独立 Chrome 用户目录
@@ -311,6 +337,8 @@ if ($needsUpdate) {
     $acfContent = $acfContent -replace '"AutoUpdateBehavior"\s+"\d+"', '"AutoUpdateBehavior"        "1"'
     $acfContent = $acfContent -replace '"BytesToDownload"\s+"\d+"', '"BytesToDownload"        "0"'
     $acfContent = $acfContent -replace '"BytesDownloaded"\s+"\d+"', '"BytesDownloaded"        "0"'
+    $acfContent = $acfContent -replace '"BytesToStage"\s+"\d+"', '"BytesToStage"        "0"'
+    $acfContent = $acfContent -replace '"BytesStaged"\s+"\d+"', '"BytesStaged"        "0"'
     
     # 写回文件
     $acfContent | Set-Content $acfPath -Encoding UTF8 -NoNewline
@@ -376,6 +404,83 @@ if ($targetChromes) {
     Write-Host "  [i] 未找到需要关闭的 Chrome 实例" -ForegroundColor Gray
 }
 ```
+
+### 步骤 10.5：询问是否清理 Steam 端游戏本体（X6Game）
+
+流程全部完成后，向用户询问是否需要清理 Steam 端的游戏本体数据以释放磁盘空间。
+
+**特别说明**：此处清理的是 Steam 版本的游戏数据，不是非 Steam 版本（如国服独立启动器版本）。必须严格区分，防止误删。
+
+**执行逻辑**：
+
+1. 基于已检测到的 Steam 游戏安装路径（`$gameDir`，即 `common\Infinity Nikki`），进入下一层 `InfinityNikki` 子目录：
+```powershell
+$steamGameCore = Join-Path $gameDir "InfinityNikki"
+```
+
+2. **二次路径校验（必须执行）**：在清理前必须验证该路径确为 Steam 版本游戏目录，而非其他版本（如国服非 Steam 版本）：
+```powershell
+# 验证路径特征：必须同时满足以下条件才确认为 Steam 版本
+$isSteamVersion = $true
+
+# 条件 1：路径必须包含 "\steamapps\common\Infinity Nikki"
+if ($steamGameCore -notmatch "steamapps\\common\\Infinity Nikki") {
+    $isSteamVersion = $false
+}
+
+# 条件 2：该目录下必须存在 Steam 版本特征文件（如 steam_appid.txt 内容为 3164330）
+$steamAppIdFile = Join-Path $gameDir "steam_appid.txt"
+if (-not (Test-Path $steamAppIdFile) -or (Get-Content $steamAppIdFile -Raw).Trim() -ne "3164330") {
+    $isSteamVersion = $false
+}
+
+# 条件 3：与已知的非 Steam 版本路径不同（如果找到了非 Steam 启动器）
+$standaloneLaunchers = Find-StandaloneLauncher  # 复用 infi-manager.ps1 的函数
+if ($standaloneLaunchers) {
+    foreach ($l in $standaloneLaunchers) {
+        if ($l.GamePath) {
+            $standaloneNorm = [System.IO.Path]::GetFullPath($l.GamePath).TrimEnd('\')
+            $steamNorm = [System.IO.Path]::GetFullPath($steamGameCore).TrimEnd('\')
+            if ($standaloneNorm -eq $steamNorm) {
+                $isSteamVersion = $false
+                Write-Host "[WARN] 路径与非 Steam 版本重合，拒绝清理: $steamGameCore" -ForegroundColor Red
+            }
+        }
+    }
+}
+```
+
+3. 检查 X6Game 文件夹是否存在并计算大小：
+```powershell
+$x6gamePath = Join-Path $steamGameCore "X6Game"
+if (Test-Path $x6gamePath) {
+    $x6gameSize = (Get-ChildItem $x6gamePath -Recurse -File | Measure-Object -Property Length -Sum).Sum
+    $x6gameSizeGB = [math]::Round($x6gameSize / 1GB, 2)
+    Write-Host "X6Game 文件夹大小: ${x6gameSizeGB}GB" -ForegroundColor Cyan
+}
+```
+
+4. **向用户确认（必须）**：在清理前展示以下信息并要求用户明确确认：
+   - Steam 游戏路径
+   - X6Game 文件夹完整路径
+   - X6Game 文件夹大小
+   - 明确告知：仅删除 X6Game 核心游戏数据，保留启动器、配置文件等
+   - 二次确认路径是否为 Steam 版本
+
+5. 仅在用户明确确认后执行删除：
+```powershell
+# 将 X6Game 移至回收站
+Remove-Item $x6gamePath -Recurse -Force
+Write-Host "[OK] X6Game 已删除，释放约 ${x6gameSizeGB}GB" -ForegroundColor Green
+```
+
+**注意**：
+- 只删除 X6Game 文件夹，保留 InfinityNikki 目录下的其他文件（启动器、配置文件等）
+- 清理后游戏将无法通过 Steam 启动游玩，需重新下载才能恢复
+- 若用户表示需保留游戏数据则跳过此步骤
+- 不要对非 Steam 版本的 X6Game 执行清理
+
+---
 
 > **Agent 执行提醒**：在流程全部完成后，必须主动向用户询问是否清理本次生成的 Chrome 用户文件夹（`chrome-profile-steamdb/`）。该文件夹包含 SteamDB 的缓存和 Cookie，若用户不再需要或出于隐私考虑，应将其删除。用 `ask_user` 或自然语言提示即可，格式示例：「本次检测生成的 Chrome 临时用户文件夹需要清理吗？」
 
@@ -446,20 +551,20 @@ if ($launchers.Count -gt 0) {
 ```
 
 ### Steam 启动选项配置
-对于中国市场版本（SubPackage），建议的启动选项：
+对于中国市场版本（SubPackage），建议的启动选项（以下路径为示例，实际以 `$gameDir` 和检测到的启动器路径为准）：
 
 ```
 # 标准配置（使用 Steam 目录下的启动器）
-"Q:\SteamLibrary\steamapps\common\Infinity Nikki\launcher.exe" %command%
+"<Steam游戏目录>\launcher.exe" %command%
 
 # 如果 launcher.exe 无法启动，尝试直接启动游戏
-"Q:\SteamLibrary\steamapps\common\Infinity Nikki\InfinityNikki\InfinityNikki.exe" %command%
+"<Steam游戏目录>\InfinityNikki\InfinityNikki.exe" %command%
 
 # 如果需要指定工作目录
-"Q:\SteamLibrary\steamapps\common\Infinity Nikki\InfinityNikki\InfinityNikki.exe" -workingdir="Q:\SteamLibrary\steamapps\common\Infinity Nikki\InfinityNikki" %command%
+"<Steam游戏目录>\InfinityNikki\InfinityNikki.exe" -workingdir="<Steam游戏目录>\InfinityNikki" %command%
 
-# 非 Steam 版本启动器配置
-"D:\Entertainment\InfinityNikkiLauncher\launcher.exe" %command%
+# 非 Steam 版本启动器配置（路径由 Find-StandaloneLauncher 检测得出）
+"<非Steam启动器路径>\launcher.exe" %command%
 ```
 
 ---
@@ -495,6 +600,45 @@ if ($depotsText -match "banned") {
 ```powershell
 $steamPath = Read-Host "请输入 Steam 安装路径（如 C:\Program Files (x86)\Steam）"
 ```
+
+---
+
+## 补充排查经验（2026-06-24）
+
+### 根因：BytesToStage / BytesStaged 非零导致误判更新
+
+即使 ACF 中 buildid、manifest、StateFlags、TargetBuildID、AutoUpdateBehavior 全部正确且版本匹配，Steam 仍可能提示需要更新。深层原因是 ACF 中可能存在 `BytesToStage` 和 `BytesStaged` 字段，这些字段在正常已安装完成游戏的 ACF 中不应存在。Steam 检测到非零暂存数据后会判定游戏需要完成更新流程。
+
+**排查步骤**：
+1. 读取 ACF 全部内容，不仅检查常规字段
+2. 特别关注任何 download / stage / staged 相关字段（BytesToDownload、BytesDownloaded、BytesToStage、BytesStaged、StagingSize、StagingFolder 等）
+3. 所有此类字段必须清零或确保不存在
+
+### 残留文件清理
+
+更新操作后可能在 steamapps 目录下留下残留文件，也会干扰 Steam 判断：
+- `appmanifest_3164330.acf.*.tmp` — ACF 临时文件，需删除
+- `appmanifest_3164330.acf.bak.*` — 备份文件，需删除
+- `steamapps\downloading\3164330` — 下载临时目录，为空则删除
+- `steamapps\temp\3164330` — 临时目录，为空则删除
+
+排查命令：
+```powershell
+Get-ChildItem -Path "$steamapps" -Filter "*3164330*" -Recurse | Select FullName, Length
+Get-ChildItem -Path "$steamapps\downloading" -ErrorAction SilentlyContinue
+```
+
+### 正常游戏 ACF 字段参考
+
+对比正常已安装游戏的 ACF（如 McPixel 3），无限暖暖 ACF 中不应存在的字段包括：
+- UpdateResult
+- BytesToDownload
+- BytesDownloaded
+- BytesToStage
+- BytesStaged
+- TargetBuildID（应设为 0，不应有非零值）
+
+这些字段均属于下载/更新暂存数据，安装完成后应清零或移除。
 
 ---
 
@@ -544,6 +688,21 @@ ACF 只读锁定: [是/否] [✅/❌]
 
 本流程涉及的文件（相对 infi 目录）：
 - `config.json` - 配置文件（自动检测路径）
-- `infi-manager.ps1` - 管理脚本
-- `chrome-profile-steamdb/` - SteamDB 专用 Chrome 用户目录（自动创建）
+- `infi-manager.ps1` - 管理脚本（含 `Find-StandaloneLauncher` 函数，供步骤 4 和步骤 10.5 复用）
+- `chrome-profile-steamdb/` - SteamDB 专用 Chrome 用户目录（自动创建，步骤 10 后询问是否清理）
 - `steamdb-check-prompt.md` - 本说明文档
+
+### 流程步骤概览
+1. 检查 Steam 是否运行
+2. 读取本地 ACF 文件（含 BytesToStage/BytesStaged 等暂存字段提取）
+3. 检查残留文件（tmp/bak/downloading/temp 目录）
+4. 创建独立 Chrome 用户目录
+5. 启动 Chrome 访问 SteamDB
+6. 通过 CDP 获取 SteamDB 数据
+7. 解析 SteamDB 数据
+8. 版本对比与决策
+9. 更新 ACF（含暂存字段清零）
+10. 运行验证
+11. 关闭 Chrome 窗口
+12. **步骤 10.5**：询问是否清理 Steam 端游戏本体（X6Game）—— 二次路径校验后删除 Steam 版本 X6Game 文件夹，释放磁盘空间
+13. 询问清理 chrome-profile-steamdb 用户目录

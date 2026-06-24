@@ -192,6 +192,7 @@ public partial class MainWindow : Window
         }
 
         SetBusy(true);
+        HideRetryButton();
         SetStatus("正在连接 SteamDB...");
         AddLog("[i] 正在启动 Chrome 获取 SteamDB 数据...");
 
@@ -209,47 +210,149 @@ public partial class MainWindow : Window
             var scriptDir = Path.GetDirectoryName(Environment.ProcessPath) ?? "";
             var result = await _scraper.FetchLatestAsync(scriptDir, progress);
 
-            _remoteBuildId = result.BuildId;
-            _remoteManifestGid = result.ManifestGid;
-
-            txtRemoteBuildId.Text = _remoteBuildId;
-            txtRemoteManifest.Text = _remoteManifestGid;
-
-            if (string.IsNullOrEmpty(_remoteBuildId) || string.IsNullOrEmpty(_remoteManifestGid))
-            {
-                SetStatus("获取 SteamDB 数据失败", isError: true);
-                SetIcon(icoBuild, "✗");
-                SetIcon(icoManifest, "✗");
-                AddLog("[X] SteamDB 数据解析失败");
-                return;
-            }
-
-            SetIcon(icoBuild, _localBuildId == _remoteBuildId ? "✓" : "✗");
-            SetIcon(icoManifest, _localManifestGid == _remoteManifestGid ? "✓" : "✗");
-
-            AddLog($"[OK] SteamDB BuildID={_remoteBuildId}, Manifest={_remoteManifestGid}");
-
-            if (_localBuildId == _remoteBuildId && _localManifestGid == _remoteManifestGid)
-            {
-                SetStatus("版本已是最新，无需更新", isSuccess: true);
-                AddLog("[OK] 版本已是最新");
-            }
-            else
-            {
-                SetStatus("发现新版本，可以点击「更新 ACF」", isWarning: true);
-                AddLog("[!] 发现新版本，需要更新 ACF");
-                btnUpdate.IsEnabled = true;
-            }
+            ProcessSteamDBResult(result);
         }
         catch (Exception ex)
         {
             SetStatus($"SteamDB 查询失败: {ex.Message}", isError: true);
             AddLog($"[ERROR] {ex.Message}");
+            // 如果 Chrome 还在运行，允许重试
+            if (_scraper.IsChromeAlive())
+                ShowRetryButton();
         }
         finally
         {
             SetBusy(false);
         }
+    }
+
+    private async void BtnRetry_Click(object sender, RoutedEventArgs e)
+    {
+        SetBusy(true);
+        HideRetryButton();
+        SetStatus("正在重试获取数据...");
+        AddLog("[i] 正在从当前 Chrome 页面重新获取数据...");
+
+        try
+        {
+            var progress = new Progress<string>(msg =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    SetStatus(msg);
+                    AddLog($"[i] {msg}");
+                });
+            });
+
+            var result = await _scraper.RetryFetchAsync(progress);
+            ProcessSteamDBResult(result);
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"重试失败: {ex.Message}", isError: true);
+            AddLog($"[ERROR] 重试失败: {ex.Message}");
+            if (_scraper.IsChromeAlive())
+                ShowRetryButton();
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
+    /// <summary>
+    /// 处理 SteamDB 查询结果（更新 UI、对比版本、启用/禁用按钮）
+    /// 如果数据为空，显示警告并允许重试
+    /// </summary>
+    private void ProcessSteamDBResult(SteamDBScraper.SteamDBResult result)
+    {
+        _remoteBuildId = result.BuildId;
+        _remoteManifestGid = result.ManifestGid;
+
+        txtRemoteBuildId.Text = _remoteBuildId;
+        txtRemoteManifest.Text = _remoteManifestGid;
+
+        if (string.IsNullOrEmpty(_remoteBuildId) || string.IsNullOrEmpty(_remoteManifestGid))
+        {
+            SetStatus("未能解析到完整数据，可点击「重试」重新获取（无需重启 Chrome）", isWarning: true);
+            SetIcon(icoBuild, string.IsNullOrEmpty(_remoteBuildId) ? "✗" : "✓");
+            SetIcon(icoManifest, string.IsNullOrEmpty(_remoteManifestGid) ? "✗" : "✓");
+            AddLog("[WARN] SteamDB 数据解析不完整");
+            AddLog("[TIP] 如果 Chrome 页面还在 Cloudflare 验证中，请等待验证完成后再点击「重试」");
+            if (_scraper.IsChromeAlive())
+                ShowRetryButton();
+            return;
+        }
+
+        SetIcon(icoBuild, _localBuildId == _remoteBuildId ? "✓" : "✗");
+        SetIcon(icoManifest, _localManifestGid == _remoteManifestGid ? "✓" : "✗");
+
+        AddLog($"[OK] SteamDB BuildID={_remoteBuildId}, Manifest={_remoteManifestGid}");
+
+        if (_localBuildId == _remoteBuildId && _localManifestGid == _remoteManifestGid)
+        {
+            SetStatus("版本已是最新，无需更新", isSuccess: true);
+            AddLog("[OK] 版本已是最新");
+        }
+        else
+        {
+            SetStatus("发现新版本，可以点击「更新 ACF」", isWarning: true);
+            AddLog("[!] 发现新版本，需要更新 ACF");
+            btnUpdate.IsEnabled = true;
+        }
+    }
+
+    private void ShowRetryButton()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            btnRetry.Visibility = Visibility.Visible;
+            btnRetry.IsEnabled = true;
+        });
+    }
+
+    private void HideRetryButton()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            btnRetry.Visibility = Visibility.Collapsed;
+            btnRetry.IsEnabled = false;
+        });
+    }
+
+    private void PromptChromeProfileCleanup()
+    {
+        try
+        {
+            var scriptDir = Path.GetDirectoryName(Environment.ProcessPath) ?? "";
+            var profileDir = Path.Combine(scriptDir, "chrome-profile-steamdb");
+            if (Directory.Exists(profileDir))
+            {
+                AddLog("[i] 本次检测生成的 Chrome 临时用户文件夹可以清理");
+                var result = MessageBox.Show(
+                    "本次检测生成的 Chrome 临时用户文件夹 (chrome-profile-steamdb) 需要清理吗？\n\n点击「是」将删除该文件夹，点击「否」保留。",
+                    "清理 Chrome 临时文件",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        Directory.Delete(profileDir, true);
+                        AddLog("[OK] chrome-profile-steamdb 已清理");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddLog($"[WARN] 清理失败: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    AddLog("[i] 已保留 chrome-profile-steamdb 文件夹");
+                }
+            }
+        }
+        catch { }
     }
 
     private void BtnUpdate_Click(object sender, RoutedEventArgs e)
@@ -438,5 +541,8 @@ public partial class MainWindow : Window
         _scraper.CloseChrome();
         AddLog("[i] Chrome 已关闭");
         SetStatus("Chrome 已关闭", isSuccess: true);
+
+        // Prompt user about chrome-profile-steamdb cleanup after closing Chrome
+        PromptChromeProfileCleanup();
     }
 }

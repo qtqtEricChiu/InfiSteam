@@ -59,6 +59,7 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button x:Name="btnDetect" Content="🔍 检测 Steam" Click="BtnDetect_Click" Style="{StaticResource ActionButton}"/>
                     <Button x:Name="btnSteamDB" Content="🌐 查询 SteamDB" Click="BtnSteamDB_Click" Style="{StaticResource ActionButton}" IsEnabled="False"/>
+                    <Button x:Name="btnRetry" Content="🔄 重试" Click="BtnRetry_Click" Style="{StaticResource ActionButton}" IsEnabled="False" Visibility="Collapsed"/>
                     <Button x:Name="btnUpdate" Content="📝 更新 ACF" Click="BtnUpdate_Click" Style="{StaticResource ActionButton}" IsEnabled="False"/>
                     <Button x:Name="btnVerify" Content="✅ 验证" Click="BtnVerify_Click" Style="{StaticResource ActionButton}" IsEnabled="False"/>
                     <Button x:Name="btnCloseChrome" Content="✖ 关闭 Chrome" Click="BtnCloseChrome_Click" Style="{StaticResource ActionButton}"/>
@@ -225,7 +226,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" x:Name="txtBottomStatus" Text="就绪" VerticalAlignment="Center" FontSize="11" Foreground="#666666"/>
-                <TextBlock Grid.Column="1" Text="InfiSteam v2.0 (WPF)" VerticalAlignment="Center" FontSize="11" Foreground="#999999"/>
+                <TextBlock Grid.Column="1" Text="InfiSteam v5.0 (WPF)" VerticalAlignment="Center" FontSize="11" Foreground="#999999"/>
             </Grid>
         </Border>
 

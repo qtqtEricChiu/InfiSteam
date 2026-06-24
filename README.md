@@ -18,6 +18,10 @@
 </p>
 
 <p align="center">
+  <sub>v5.0 新增：Cloudflare 验证自动处理、解析失败可重试（无需重启 Chrome）、ACF 自动备份</sub>
+</p>
+
+<p align="center">
   <sub>包括本文档及程序在内均包含 AI 辅助生成。不代表本人立场。</sub>
 </p>
 

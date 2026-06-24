@@ -35,6 +35,9 @@ public class AcfManager
 
     public void Update(string acfPath, string newBuildId, string newManifestGid)
     {
+        // Backup ACF before updating
+        Backup(acfPath);
+
         var content = File.ReadAllText(acfPath);
 
         content = RegexReplace(content, "buildid", newBuildId);
@@ -54,6 +57,27 @@ public class AcfManager
 
         // Lock readonly
         File.SetAttributes(acfPath, File.GetAttributes(acfPath) | FileAttributes.ReadOnly);
+    }
+
+    private static void Backup(string acfPath)
+    {
+        try
+        {
+            var acfDir = Path.GetDirectoryName(acfPath) ?? "";
+            var backupDir = Path.Combine(acfDir, "..", "backups");
+            backupDir = Path.GetFullPath(backupDir);
+            Directory.CreateDirectory(backupDir);
+
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var backupName = $"appmanifest_3164330.acf.bak.{timestamp}";
+            var backupPath = Path.Combine(backupDir, backupName);
+
+            File.Copy(acfPath, backupPath, true);
+        }
+        catch
+        {
+            // Best effort backup
+        }
     }
 
     public bool IsReadOnly(string acfPath)
