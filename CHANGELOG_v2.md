@@ -1,5 +1,49 @@
 ﻿# 无限暖暖 Steam 壳管理工具 - 更新日志
 
+## v5.1 — Prompt 优化 + WinUI 3 修复 + 文件夹重构
+
+### 新增
+- **AI Prompt 重要通知**：在 `steamdb-check-prompt-glo.md` 中添加强制免责声明，Agent 必须在开始操作前向用户输出（支持自动翻译）
+- **Agent 行为规范（严格执行）**：新增完整章节，严格限制：
+  - 浏览器使用：优先系统 Chrome，禁止直接使用 `curl`/`Invoke-WebRequest` 等网络工具访问 SteamDB
+  - Cloudflare 处理：必须等待验证完成，禁止跳过或忽略 Cloudflare 过渡页
+  - 网络访问限制：仅通过 Chrome CDP 获取数据，禁止无头浏览器模式
+- **网络检测功能**：访问 SteamDB 超时自动执行网络诊断：
+  - 同时 Ping SteamDB 和 Cloudflare 检测延迟
+  - DNS 解析检测（对两个域名）
+  - 代理设置检测
+  - 综合判断建议（区分网络断开、SteamDB 被屏蔽、延迟过高等场景）
+- **ACF 场清零扩展**：在更新时确保 `BytesToStage`、`BytesStaged` 等暂存字段清零
+
+### 修复
+- **WinUI 3 Toast 重复弹出**：`CheckStandaloneLauncher` 方法在 `silent=true` 时仍调用 `AddLog` 导致 toast 频繁弹出 → 修复为 silent 模式不再记录日志
+- **WinUI 3 图标加载**：修复 release 版本无法加载 `ico.ico` 的问题
+- **WPF 图标加载**：修复 `IOException: 找不到资源 'ico.ico'` → 改用 `pack://` URI 方案
+- **路径约束同步**：`infi-manager.ps1` 中原本写入 `$env:TEMP` 的临时文件全部改为写入脚本所在目录，与 Prompt 指令保持一致
+
+### 优化
+- **文件夹重组**：`source/` 存放开发文件，`release/` 包含三个独立子文件夹（WPF、WinUI3、AI_Prompt_with_Powershell）
+- **构建脚本**：`build_csharp.bat` 分开编译 WPF 和 WinUI3 到不同输出目录
+- **infi-manager.ps1**：添加 `Test-NetworkConnectivity` 网络检测函数，集成到 `Invoke-SteamDBCheck`
+- **网络检测代码**：从单目标 ping 升级为同时检测 SteamDB 和 Cloudflare，提供更准确的网络诊断
+
+### 技术细节
+- `Prompts/steamdb-check-prompt-glo.md` 新增：
+  - 📢 重要通知区块（免责声明 + 自动翻译）
+  - ⛔ Agent 行为规范（浏览器、Cloudflare、网络访问三项严格限制）
+  - 🛠 超时处理与网络检测（判断条件 + PowerShell 诊断代码 + 综合建议）
+- `infi-manager.ps1` 新增 `Test-NetworkConnectivity()` 函数
+- `MainWindow.xaml.cs` 修复 `CheckStandaloneLauncher()` silent 模式行为
+
+### 文件
+- `release/AI_Prompt_with_Powershell/` — Prompt 文件 + infi-manager.ps1（独立可运行）
+- `release/C#_WPF/` — WPF 编译输出
+- `release/C#_WinUI3/` — WinUI3 编译输出
+- `source/` — 所有开发源文件
+- `build_csharp.bat` — 新版构建脚本
+
+---
+
 ## v5.0 — Cloudflare 处理 + 重试机制 + ACF 备份
 
 ### 新增

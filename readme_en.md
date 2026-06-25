@@ -20,6 +20,10 @@
 </p>
 
 <p align="center">
+  <sub>v5.1 New: 🎉 WinUI 3 Modern Edition Released · AI Prompt Agent Guidelines · Network Diagnostics · Cloudflare Auto-Handling</sub>
+</p>
+
+<p align="center">
   <sub>This document and the accompanying program contain AI-assisted content. Does not reflect personal endorsement.</sub>
 </p>
 
@@ -31,7 +35,7 @@
   <strong>InfiSteam</strong><br />
   ▸ Forges ACF version info + auto-scrapes latest BuildID / Manifest GID from SteamDB via Chrome CDP for one-click version sync<br />
   ▸ Skeletonizes the Steam shell directory, relocating core game data to a same-disk backup to free space with instant restore capability<br />
-  ▸ Supports three operation modes: AI Agent auto-detection / Python GUI / PowerShell CLI
+  ▸ Supports multiple operation modes: AI Agent auto-detection (Recommended) / WinUI 3 Modern Edition / WPF Desktop / PowerShell CLI
 </p>
 
 <br />
@@ -40,14 +44,27 @@
 
 ## Quick Start
 
-### Option 1: C# Native Desktop App (WPF · Recommended)
+### Option 1: AI Agent Prompt (Highly Recommended ⭐)
 
-Ready to use — double-click `C#/build/InfiSteam.exe`. No Python or .NET runtime required.
-
-### Option 2: AI Agent Prompt
-
-Instruct OpenClaw, WorkBuddy, Marvis, or QClaw to read `steamdb-check-prompt-glo.md` — the AI Agent will autonomously complete the entire detection workflow.<br />
+Instruct OpenClaw, WorkBuddy, Marvis, or QClaw to read `release/AI_Prompt_with_Powershell/steamdb-check-prompt-glo.md` — the AI Agent will autonomously complete the entire detection workflow.<br />
+<sub>Includes complete Agent behavior guidelines, Cloudflare handling instructions, and network diagnostics. Best for debugging and automation.</sub><br />
 <sub>~May incur costs~</sub>
+
+### Option 2: C# Native Desktop App
+
+#### WinUI 3 Modern Edition (v5.1 New 🎉)
+Built with WinUI 3 + Fluent Design 2 modern interface, featuring beautiful visuals and smooth animations.
+```powershell
+# Ready to use, no dependencies required
+.\release\C#_WinUI3\InfiSteam.WinUI.exe
+```
+
+#### WPF Version (Stable & Reliable)
+Built with WPF + Fluent Design, excellent compatibility and fast startup.
+```powershell
+# Ready to use, no dependencies required
+.\release\C#_WPF\InfiSteam.exe
+```
 
 ### Option 3: Python GUI
 
@@ -59,13 +76,13 @@ python infi-gui.py
 
 ```powershell
 # Check current status
-.\infi-manager.ps1 status
+.\release\AI_Prompt_with_Powershell\infi-manager.ps1 status
 
 # Fully automated SteamDB detection & update
-.\infi-manager.ps1 steamdb-check
+.\release\AI_Prompt_with_Powershell\infi-manager.ps1 steamdb-check
 
 # Comprehensive verification
-.\infi-manager.ps1 verify
+.\release\AI_Prompt_with_Powershell\infi-manager.ps1 verify
 ```
 
 ### Prerequisites
@@ -73,6 +90,18 @@ python infi-gui.py
 - **Windows 10 / 11** (x64)
 - Steam installed with the game in library
 - **Steam must be fully exited before any operation** (including `steamwebhelper` processes)
+
+---
+
+## Which Version Should I Choose?
+
+| Method | Best For | Features |
+|--------|----------|----------|
+| **AI Agent Prompt** | All users (Recommended) | Fully automated, no manual operation, complete error handling |
+| **WinUI 3 Desktop** | Users who love modern UI | Latest Fluent Design 2 interface, best animation effects |
+| **WPF Desktop** | Users who prefer stability | Excellent compatibility, low resource usage, long-term proven |
+| **Python GUI** | Python environment users | Cross-platform potential, easy for secondary development |
+| **Command Line** | Advanced users / Automation | Can be integrated into batch scripts, supports CI/CD |
 
 ---
 
