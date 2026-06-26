@@ -20,7 +20,6 @@
 
 - [背景](#背景)
 - [方案原理](#方案原理)
-- [文件结构](#文件结构)
 - [快速开始](#快速开始)
 - [WinUI 3 现代版本（v5.1 新增）](#winui-3-现代版本v51-新增)
 - [功能详解](#功能详解)
@@ -70,96 +69,60 @@
 
 ---
 
-## 文件结构
-
-```
-release/
-├── ico.png                         # 应用图标
-├── ico.ico                         # Windows 图标
-├── AI_Prompt_with_Powershell/      # AI Agent 提示词 + PowerShell 脚本（推荐）
-│   ├── steamdb-check-prompt-glo.md #   AI Agent 检测流程规范（完整版）
-│   ├── infi-manager.ps1            #   PowerShell 核心脚本
-│   ├── infi_steamdb_fetch.py       #   SteamDB 数据获取 Python 辅助脚本
-│   ├── config.json                  #   配置文件
-│   └── backups/                    #   ACF 备份目录
-├── C#_WPF/                        # WPF 桌面程序发行版（稳定可靠）
-│   ├── InfiSteam.exe               #   主程序
-│   ├── ico.ico                     #   图标
-│   └── *.dll / *.json              #   依赖文件
-├── C#_WinUI3/                      # WinUI 3 桌面程序发行版（v5.1 新增🎉）
-│   ├── InfiSteam.WinUI.exe         #   主程序
-│   ├── ico.ico                     #   图标
-│   ├── Microsoft.UI.Xaml/          #   WinUI 3 运行时
-│   └── *.winmd / *.pri             #   依赖文件
-├── README.md                       # 简体中文简介
-├── readme_en.md                    # English introduction
-├── CHANGELOG_v2.md                # 更新日志
-└── 安装说明.txt                     # 简体中文安装说明
-
-source/                             # 开发源文件
-├── README.md                       # 本文档（简体中文简介）
-├── readme_en.md                    # 本文档（英文简介）
-├── readme_full.md                  # 完整文档（本文）
-├── CHANGELOG_v2.md                # 更新日志
-├── ico.png / ico.ico              # 图标源文件
-├── infi-gui.py                    # Python GUI 启动器
-├── config.json                     # 配置文件模板
-├── build_csharp.bat               # C# 构建脚本
-└── C#/
-    ├── InfiSteam/                 # WPF 版本源代码（.NET 10）
-    ├── InfiSteam.WinUI/           # WinUI 3 版本源代码（.NET 10）
-    ├── InfiSteamWinUI3/           # WinUI 3 替代方案源代码
-    ├── SteamDBChecker/            # SteamDB 检测库
-    ├── InfiSteam.sln              # WPF 解决方案
-    └── SteamDBChecker.sln         # SteamDB 检测解决方案
-```
-
----
-
 ## 快速开始
+
+> **下载发行版**：所有程序文件请从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载。
 
 ### 方式一：AI Agent 提示词（强烈推荐 ⭐）
 
-命令 OpenClaw、WorkBuddy、Marvis、QClaw 读取 `release/AI_Prompt_with_Powershell/steamdb-check-prompt-glo.md`，AI Agent 将自动完成所有检测流程。
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `steamdb-check-prompt-glo.md`，命令 OpenClaw、WorkBuddy、Marvis、QClaw 读取该文件，AI Agent 将自动完成所有检测流程。
 
 <sub>💡 这是最适合调试和自动化场景的方式，包含完整的 Agent 行为规范、Cloudflare 处理指导、网络诊断逻辑。</sub><br />
 <sub>~可能产生费用~</sub>
 
 ### 方式二：WinUI 3 现代桌面版（v5.1 全新上线 🎉）
 
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `C#_WinUI3` 版本：
+
 ```powershell
-# 直接运行，无需任何依赖
-.\release\C#_WinUI3\InfiSteam.WinUI.exe
+# 下载后直接运行
+.\InfiSteam.WinUI.exe
 ```
 
 采用 WinUI 3 + Fluent Design 2 现代界面，视觉效果更精美，动画更流畅。
 
 ### 方式三：WPF 稳定桌面版
 
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `C#_WPF` 版本：
+
 ```powershell
-# 直接运行，无需任何依赖
-.\release\C#_WPF\InfiSteam.exe
+# 下载后直接运行
+.\InfiSteam.exe
 ```
 
 采用 WPF + Fluent Design，兼容性好，启动速度快，资源占用低。
 
-### 方式四：Python GUI
+### 方式四：Python GUI（需 Python 环境）
+
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `InfiSteam.exe`（Python GUI Pro 单文件版），或运行源码：
 
 ```powershell
-python infi-gui.py
+python infi-gui-pro.py
 ```
 
 ### 方式五：命令行
 
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载发行版，解压后运行：
+
 ```powershell
 # 查看当前状态
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 status
+.\infi-manager.ps1 status
 
 # SteamDB 全自动检测并更新
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 steamdb-check
+.\infi-manager.ps1 steamdb-check
 
 # 全面验证
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 verify
+.\infi-manager.ps1 verify
 ```
 
 ### 前置条件
@@ -241,10 +204,10 @@ WinUI 3 版本是 InfiSteam 的全新现代桌面版本，采用微软最新的 
 
 ### 命令行完整参考
 
-所有命令均需在 **Steam 已完全退出** 的前提下执行：
+所有命令均需在 **Steam 已完全退出** 的前提下执行（需先从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载发行版）：
 
 ```powershell
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 <command> [options]
+.\infi-manager.ps1 <command> [options]
 ```
 
 | 命令 | 说明 |
@@ -318,9 +281,10 @@ AI Agent 方式是最智能、最自动化的使用方式：
 
 ### 使用方法
 
-1. 打开支持的 AI Agent 工具（OpenClaw / WorkBuddy / Marvis / QClaw）
-2. 命令 Agent 读取 `release/AI_Prompt_with_Powershell/steamdb-check-prompt-glo.md`
-3. Agent 会自动完成所有流程，包括：
+1. 从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `steamdb-check-prompt-glo.md`
+2. 打开支持的 AI Agent 工具（OpenClaw / WorkBuddy / Marvis / QClaw）
+3. 命令 Agent 读取该文件
+4. Agent 会自动完成所有流程，包括：
    - 检测 Steam 状态
    - 启动 Chrome 并获取 SteamDB 数据
    - 对比本地 ACF 版本
@@ -434,7 +398,7 @@ AI Agent 方式是最智能、最自动化的使用方式：
 | 骨架化报错 | Steam 未完全退出 | 任务管理器结束 `steam.exe` 和 `steamwebhelper` |
 | 游戏无法启动 | 壳文件缺失 | 运行 `restore` 还原备份 |
 | 权限不足 | 非管理员运行 | 以管理员运行 PowerShell |
-| GUI 闪退 | 依赖缺失 | 使用发行版（`release/` 目录）而非源代码 |
+| GUI 闪退 | 依赖缺失 | 使用发行版（GitHub Releases）而非源代码 |
 | WinUI 3 启动失败 | Windows 版本过低或运行时缺失 | 升级 Windows 或切换至 WPF 版本 |
 | Toast 重复弹出（WinUI 3） | v5.1 已修复 | 更新至最新版本 |
 
@@ -448,18 +412,21 @@ AI Agent 方式是最智能、最自动化的使用方式：
 - **AI Prompt 重要通知**：Agent 必须在开始操作前向用户输出免责声明（支持自动翻译）
 - **Agent 行为规范**：严格限制浏览器使用、Cloudflare 处理、网络访问等行为
 - **网络诊断功能**：访问 SteamDB 超时自动执行网络诊断（Ping + DNS + 代理检测）
+- **Python GUI Pro**：全新 customtkinter 现代界面，移植 C# 核心检测功能，单文件 EXE 仅 20 MB
 
 ### 修复问题
 
 - **WinUI 3 Toast 重复弹出**：修复窗口激活时重复触发日志和 Toast 的问题
 - **路径约束同步**：`infi-manager.ps1` 临时文件路径与 Prompt 指令保持一致
 - **图标加载**：修复 release 版本无法加载图标的问题
+- **Python GUI 窗口闪烁**：所有子进程彻底隐藏，后台静默运行
 
 ### 优化改进
 
-- **文件夹重组**：`release/` 目录按功能独立分包，结构更清晰
-- **构建脚本**：`build_csharp.bat` 支持分别编译 WPF 和 WinUI 3
+- **文件夹重组**：按功能独立分包（AI_Prompt / WPF / WinUI3 / Python_GUI）
+- **构建脚本**：`build_csharp.bat` / `build_python_gui.bat` 按需编译
 - **网络检测**：同时检测 SteamDB 和 Cloudflare，诊断更准确
+- **体积精简**：Python GUI Pro 单文件仅 20 MB，远小于 C# 自包含版本
 
 ---
 
@@ -469,6 +436,7 @@ AI Agent 方式是最智能、最自动化的使用方式：
 - [SteamDB Sub 1221922](https://steamdb.info/sub/1221922/)
 - [SteamDB Depot 3164332](https://steamdb.info/depot/3164332/manifests/)
 - [技术原理：Steam 游戏更新机制与 ACF 文件](https://cloud.tencent.com/developer/article/2468980)
+- [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases)
 - [WinUI 3 官方文档](https://learn.microsoft.com/en-us/windows/apps/winui/)
 
 ---

@@ -44,45 +44,53 @@
 
 ## Quick Start
 
+> **Download releases**: All program files are available at [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases).
+
 ### Option 1: AI Agent Prompt (Highly Recommended ⭐)
 
-Instruct OpenClaw, WorkBuddy, Marvis, or QClaw to read `release/AI_Prompt_with_Powershell/steamdb-check-prompt-glo.md` — the AI Agent will autonomously complete the entire detection workflow.<br />
+Download `steamdb-check-prompt-glo.md` from [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases), instruct OpenClaw, WorkBuddy, Marvis, or QClaw to read it — the AI Agent will autonomously complete the entire detection workflow.<br />
 <sub>Includes complete Agent behavior guidelines, Cloudflare handling instructions, and network diagnostics. Best for debugging and automation.</sub><br />
 <sub>~May incur costs~</sub>
 
 ### Option 2: C# Native Desktop App
 
+Download from [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases):
+
 #### WinUI 3 Modern Edition (v5.1 New 🎉)
 Built with WinUI 3 + Fluent Design 2 modern interface, featuring beautiful visuals and smooth animations.
 ```powershell
 # Ready to use, no dependencies required
-.\release\C#_WinUI3\InfiSteam.WinUI.exe
+.\InfiSteam.WinUI.exe
 ```
 
 #### WPF Version (Stable & Reliable)
 Built with WPF + Fluent Design, excellent compatibility and fast startup.
 ```powershell
 # Ready to use, no dependencies required
-.\release\C#_WPF\InfiSteam.exe
+.\InfiSteam.exe
 ```
 
-### Option 3: Python GUI
+### Option 3: Python GUI (Python environment required)
+
+Download `InfiSteam.exe` (Python GUI Pro standalone) from [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases), or run the source directly:
 
 ```powershell
-python infi-gui.py
+python infi-gui-pro.py
 ```
 
 ### Option 4: Command Line
 
+Download the release archive from [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases), extract it, and run:
+
 ```powershell
 # Check current status
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 status
+.\infi-manager.ps1 status
 
 # Fully automated SteamDB detection & update
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 steamdb-check
+.\infi-manager.ps1 steamdb-check
 
 # Comprehensive verification
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 verify
+.\infi-manager.ps1 verify
 ```
 
 ### Prerequisites
@@ -121,6 +129,7 @@ For detailed feature descriptions, methodology, configuration reference, and tro
 - [SteamDB Sub 1221922](https://steamdb.info/sub/1221922/)
 - [SteamDB Depot 3164332](https://steamdb.info/depot/3164332/manifests/)
 - [Technical Deep-Dive: Steam Update Mechanism & ACF Files](https://cloud.tencent.com/developer/article/2468980)
+- [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases)
 
 ---
 

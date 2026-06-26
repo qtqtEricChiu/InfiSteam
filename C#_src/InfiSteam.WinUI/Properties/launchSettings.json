@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "InfiSteam.WinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "InfiSteam.WinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

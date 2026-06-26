@@ -1,0 +1,129 @@
+Skip to content
+Menu
+SteamDB
+Sales
+Charts
+Calculator
+Calendar
+Patches
+Tags
+Support us
+ Sign in
+Infinity Nikki
+Wishlist
+Follow
+Ignore
+Launch
+Watch
+App ID 	3164330
+App Type	Game
+Developer	Infold Games
+Publisher	Infold Games
+Supported Systems	 Windows  
+Technologies 	AntiCheatExpert AntiCheat, Unreal Engine, EpicOnlineServices SDK
+Last Changenumber 	36794991
+Last Record Update	24 June 2026 – 03:08:50 UTC ()
+Release Date	28 April 2025 – 18:03:30 UTC ()
+Store
+Hub
+PCGW
+IGDB
+😐 55.69%
+10k reviews
+1,774
+In-Game
++2
+🧘 Relaxing
+🧸 Cute
+🌍 Open World
+😌 Casual
+🎲 RPG
+
+Embark on a cozy open-world adventure filled with vast landscape, mystical puzzles and unexpected platforming challenges. Dress up not just for style, but to unravel hidden mysteries, interact with a vibrant environment, and experience the freedom to explore at your own pace.
+
+ Store info
+ Charts
+ Patches
+ Metadata
+ Packages 3
+ Depots 2
+ Configuration
+ Cloud saves
+ Achievements
+ Community
+ Screenshots
+ Related apps
+ Update history
+Depots
+ID	 Configuration	 Size	 DL.
+3164331	 Windows 64-bit	119.02 GiB	111.81 GiB
+3164332	 Windows 64-bit	119.02 GiB	111.82 GiB
+Redistributables
+ID	 Configuration	 Size	 DL.
+228989	 Windows Shared InstallDepot from 228980VC 2022 Redist	No size	
+228990	 Windows Shared InstallDepot from 228980DirectX Jun 2010 Redist	No size	
+
+Total size on disk is 238.05 GiB and total download size is 223.63 GiB.
+
+ 
+
+Branches
+Name	Description	Build ID 	Time Built	Time Updated
+public		23881475		
+Other
+Name	Value
+hasdepotsindlc	0
+baselanguages	English, German, French, Italian, Korean, Spanish - Spain, Simplified Chinese, Traditional Chinese, Russian, Thai, Japanese, Portuguese - Portugal, Polish, Danish, Dutch, Finnish, Norwegian, Swedish, Hungarian, Czech, Romanian, Turkish, Arabic, Portuguese - Brazil, Bulgarian, Greek, Ukrainian, Spanish - Latin America, Vietnamese, Indonesian
+privatebranches 	1
+Steam data for everyone since 2012
+Support us by donating or becoming a sponsor
+ ABOUT
+Blog
+Discord
+Discord Bot
+FAQ & help
+Donate & contribute
+Browser extension
+ DISCOVERY
+Sales & Deals
+Upcoming releases
+Release calendar
+Free promotions
+Bundles
+Price changes
+When is next sale?
+ TOOLS
+Charts
+Calculator
+Patch notes
+Search
+Instant search
+Steam Status
+Steam Web API
+ DATABASE
+Game tags
+Developers
+Publishers
+Badges leaderboard
+Engines & technologies
+Game releases by year
+Change history
+ RANKINGS
+Top rated games
+Global top sellers
+Weekly top sellers
+Most followed games
+Most wishlisted games
+Wishlist activity
+Daily active users
+ ACCOUNT
+Sign in via Steam
+Free packages
+
+SteamDB is a hobby project and is not affiliated with Valve or Steam. All times on the site are UTC. Fair use disclaimer · Privacy
+
+Steam and the Steam logo are trademarks of Valve Corporation. All other trademarks are property of their respective owners.
+
+Infinity Nikki © Infold Games ALL RIGHTS RESERVED
+
+   

@@ -67,6 +67,11 @@ public partial class MainWindow : Window
             btnSteamDB.IsEnabled = !busy && !string.IsNullOrEmpty(_acfPath);
             btnUpdate.IsEnabled = !busy && !string.IsNullOrEmpty(_acfPath);
             btnVerify.IsEnabled = !busy && !string.IsNullOrEmpty(_acfPath);
+            btnSkeletonize.IsEnabled = !busy && !string.IsNullOrEmpty(_gamePath);
+            btnRestore.IsEnabled = !busy && !string.IsNullOrEmpty(_gamePath);
+            btnResidual.IsEnabled = !busy && !string.IsNullOrEmpty(_acfPath);
+            btnNetDiag.IsEnabled = !busy;
+            btnReport.IsEnabled = !busy && !string.IsNullOrEmpty(_steamPath);
         });
     }
 
@@ -544,5 +549,268 @@ public partial class MainWindow : Window
 
         // Prompt user about chrome-profile-steamdb cleanup after closing Chrome
         PromptChromeProfileCleanup();
+    }
+
+    // ─── 新增：免责声明 ──────────────────────────────
+
+    private void BtnDisclaimer_Click(object sender, RoutedEventArgs e)
+    {
+        ShowDisclaimer();
+    }
+
+    private void ShowDisclaimer()
+    {
+        var ci = System.Globalization.CultureInfo.CurrentUICulture;
+        bool isCn = ci.Name.StartsWith("zh");
+
+        string text, title;
+        if (isCn)
+        {
+            title = "版权声明";
+            text = "© mocabolka 2026\n\n"
+                + "本工具与 Valve/Steam、SteamDB、叠纸游戏/Infold Games 无关。\n"
+                + "仅供学习交流使用。";
+        }
+        else
+        {
+            title = "Copyright Notice";
+            text = "© mocabolka 2026\n\n"
+                + "This tool is not affiliated with Valve/Steam, SteamDB, or Papergames/Infold Games.\n"
+                + "For learning and exchange purposes only.";
+        }
+
+        MessageBox.Show(text, title, MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    // ─── 新增：残留文件检查 ──────────────────────────
+
+    private void BtnResidual_Click(object sender, RoutedEventArgs e)
+    {
+        SetBusy(true);
+        AddLog("======== 残留文件检查 ========");
+
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await Task.Run(() =>
+            {
+                var result = AcfManager.CheckResidualFiles(_acfPath);
+                Dispatcher.Invoke(() =>
+                {
+                    foreach (var line in result.Split('\n'))
+                        if (!string.IsNullOrWhiteSpace(line))
+                            AddLog(line.TrimEnd('\r'));
+                    SetStatus("残留检查完成", isSuccess: true);
+                    SetBusy(false);
+                });
+            });
+        });
+    }
+
+    // ─── 新增：骨架化（调用 infi-manager.ps1）───────
+
+    private void BtnSkeletonize_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "即将执行骨架化清理：将 X6Game (~110GB) 移至同盘备份目录。\n\nSteam 必须已完全退出。是否继续？",
+            "骨架化清理",
+            MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result == MessageBoxResult.Yes)
+            RunPSCommand("skeletonize");
+    }
+
+    private void BtnRestore_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "即将从备份目录还原 X6Game 到 Steam 目录。\n\nSteam 必须已完全退出。是否继续？",
+            "还原 X6Game",
+            MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result == MessageBoxResult.Yes)
+            RunPSCommand("restore");
+    }
+
+    private void RunPSCommand(string command)
+    {
+        SetBusy(true);
+
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var scriptDir = Path.GetDirectoryName(Environment.ProcessPath) ?? "";
+                    var psScript = Path.Combine(Directory.GetParent(scriptDir)?.Parent?.Parent?.FullName ?? "",
+                        "release", "AI_Prompt_with_Powershell", "infi-manager.ps1");
+
+                    // Try to locate ps1 script relative to source dir
+                    if (!File.Exists(psScript))
+                    {
+                        // Fallback: check common locations
+                        var candidates = new[]
+                        {
+                            Path.Combine(scriptDir, "infi-manager.ps1"),
+                            Path.Combine(Directory.GetCurrentDirectory(), "infi-manager.ps1"),
+                        };
+                        psScript = candidates.FirstOrDefault(File.Exists) ?? psScript;
+                    }
+
+                    if (!File.Exists(psScript))
+                    {
+                        psScript = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "infi-manager.ps1");
+                    }
+
+                    if (!File.Exists(psScript))
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog("[ERROR] infi-manager.ps1 not found - skeletonize/restore unavailable");
+                            SetStatus("脚本未找到", isError: true);
+                            SetBusy(false);
+                        });
+                        return;
+                    }
+
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "powershell",
+                        Arguments = $"-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '{psScript}' {command}\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        StandardOutputEncoding = Encoding.UTF8
+                    };
+
+                    using var proc = Process.Start(psi);
+                    if (proc != null)
+                    {
+                        while (!proc.StandardOutput.EndOfStream)
+                        {
+                            var line = proc.StandardOutput.ReadLine();
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                Dispatcher.Invoke(() => AddLog(line));
+                            }
+                        }
+                        proc.WaitForExit();
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog($"[i] exit code: {proc.ExitCode}");
+                            SetStatus(proc.ExitCode == 0 ? "完成" : "失败",
+                                      isError: proc.ExitCode != 0,
+                                      isSuccess: proc.ExitCode == 0);
+                            SetBusy(false);
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddLog($"[ERROR] {ex.Message}");
+                        SetStatus($"错误: {ex.Message}", isError: true);
+                        SetBusy(false);
+                    });
+                }
+            });
+        });
+    }
+
+    // ─── 新增：网络诊断 ──────────────────────────────
+
+    private void BtnNetDiag_Click(object sender, RoutedEventArgs e)
+    {
+        SetBusy(true);
+        AddLog("======== 网络诊断 ========");
+
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await Task.Run(() =>
+            {
+                var result = AcfManager.RunNetworkDiag();
+                Dispatcher.Invoke(() =>
+                {
+                    foreach (var line in result.Split('\n'))
+                        if (!string.IsNullOrWhiteSpace(line))
+                            AddLog(line.TrimEnd('\r'));
+                    SetStatus("网络诊断完成", isSuccess: true);
+                    SetBusy(false);
+                });
+            });
+        });
+    }
+
+    // ─── 新增：输出报告 ──────────────────────────────
+
+    private void BtnReport_Click(object sender, RoutedEventArgs e)
+    {
+        SetBusy(true);
+        AddLog("======== 生成报告 ========");
+
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await Task.Run(() =>
+            {
+                var report = AcfManager.GenerateReport(_steamPath, _acfPath, _gamePath);
+                Dispatcher.Invoke(() =>
+                {
+                    // 弹出报告窗口
+                    var w = new Window
+                    {
+                        Title = "报告",
+                        Width = 680,
+                        Height = 520,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        Owner = this,
+                        Content = new Grid
+                        {
+                            Margin = new Thickness(15),
+                            RowDefinitions =
+                            {
+                                new RowDefinition { Height = GridLength.Auto },
+                                new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
+                                new RowDefinition { Height = GridLength.Auto }
+                            }
+                        }
+                    };
+                    var grid = (Grid)w.Content;
+
+                    grid.Children.Add(new TextBlock
+                    {
+                        Text = "📋 报告",
+                        FontSize = 18,
+                        FontWeight = FontWeights.SemiBold,
+                        Margin = new Thickness(0, 0, 0, 10)
+                    });
+
+                    var tb = new System.Windows.Controls.TextBox
+                    {
+                        Text = report,
+                        FontFamily = new FontFamily("Consolas"),
+                        FontSize = 12,
+                        IsReadOnly = true,
+                        TextWrapping = TextWrapping.Wrap,
+                        VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        Margin = new Thickness(0, 0, 0, 10)
+                    };
+                    Grid.SetRow(tb, 1);
+                    grid.Children.Add(tb);
+
+                    var closeBtn = new Button
+                    {
+                        Content = "关闭",
+                        Width = 80,
+                        Height = 30,
+                        HorizontalAlignment = HorizontalAlignment.Right
+                    };
+                    closeBtn.Click += (s, ev) => w.Close();
+                    Grid.SetRow(closeBtn, 2);
+                    grid.Children.Add(closeBtn);
+
+                    w.ShowDialog();
+                    SetStatus("报告已生成", isSuccess: true);
+                    SetBusy(false);
+                });
+            });
+        });
     }
 }

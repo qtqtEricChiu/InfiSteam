@@ -42,45 +42,53 @@
 
 ## 快速开始
 
+> **下载发行版**：所有程序文件请从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载。
+
 ### 方式一：AI Agent 提示词（强烈推荐 ⭐）
 
-命令 OpenClaw、WorkBuddy、Marvis、QClaw 读取 `release/AI_Prompt_with_Powershell/steamdb-check-prompt-glo.md`，AI Agent 自动完成所有检测流程。<br />
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `steamdb-check-prompt-glo.md`，命令 OpenClaw、WorkBuddy、Marvis、QClaw 读取该文件，AI Agent 自动完成所有检测流程。<br />
 <sub>包含完整的 Agent 行为规范、Cloudflare 处理指导、网络诊断逻辑，最适合调试和自动化场景。</sub><br />
 <sub>~可能产生费用~</sub>
 
 ### 方式二：C# 原生桌面程序
 
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载以下版本：
+
 #### WinUI 3 现代版本（v5.1 全新上线 🎉）
 采用 WinUI 3 + Fluent Design 2 现代界面，视觉效果更精美，动画更流畅。
 ```powershell
-# 直接运行，无需任何依赖
-.\release\C#_WinUI3\InfiSteam.WinUI.exe
+# 下载后直接运行，无需任何依赖
+.\InfiSteam.WinUI.exe
 ```
 
 #### WPF 版本（稳定可靠）
 采用 WPF + Fluent Design，兼容性好，启动速度快。
 ```powershell
-# 直接运行，无需任何依赖
-.\release\C#_WPF\InfiSteam.exe
+# 下载后直接运行，无需任何依赖
+.\InfiSteam.exe
 ```
 
-### 方式三：Python GUI
+### 方式三：Python GUI（需 Python 环境）
+
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `InfiSteam.exe`（Python GUI Pro 单文件版），或运行源码：
 
 ```powershell
-python infi-gui.py
+python infi-gui-pro.py
 ```
 
 ### 方式四：命令行
 
+从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载发行版，解压后在目录中运行：
+
 ```powershell
 # 查看当前状态
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 status
+.\infi-manager.ps1 status
 
 # SteamDB 全自动检测并更新
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 steamdb-check
+.\infi-manager.ps1 steamdb-check
 
 # 全面验证
-.\release\AI_Prompt_with_Powershell\infi-manager.ps1 verify
+.\infi-manager.ps1 verify
 ```
 
 ### 前置条件
@@ -119,6 +127,7 @@ python infi-gui.py
 - [SteamDB Sub 1221922](https://steamdb.info/sub/1221922/)
 - [SteamDB Depot 3164332](https://steamdb.info/depot/3164332/manifests/)
 - [技术原理：Steam 游戏更新机制与 ACF 文件](https://cloud.tencent.com/developer/article/2468980)
+- [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases)
 
 ---
 

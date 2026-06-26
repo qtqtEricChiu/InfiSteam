@@ -1,0 +1,97 @@
+Skip to content
+Menu
+SteamDB
+Sales
+Charts
+Calculator
+Calendar
+Patches
+Tags
+Support us
+ Sign in
+Depot 3164332 for Infinity Nikki
+
+ Windows
+64-bit
+
+Depot ID	3164332
+Build ID	23881475
+Last public update	23 June 2026 – 19:55:18 UTC ()
+Size on disk	119.02 GiB
+Compressed size	111.82 GiB (6.05% saving)
+ Files 3,020
+ Apps 1
+ Packages 1
+ Manifests 10
+ History
+Previously seen manifests
+
+ Filter branch
+
+- unfiltered -
+public
+Copy format:
+Steam console
+DepotDownloader
+Seen Date	Relative Date	ManifestID	
+23 June 2026 – 19:55:16 UTC	2 days ago	3778336110814057436	
+28 May 2026 – 20:00:19 UTC	28 days ago	4067862095346640638	
+13 May 2026 – 06:32:55 UTC	last month	2876239753423730513	
+23 April 2026 – 20:19:34 UTC	2 months ago	8614993735461939695	
+26 March 2026 – 20:06:10 UTC	3 months ago	1641350020908494673	
+2 March 2026 – 20:31:03 UTC	3 months ago	4673924178202396914	
+29 January 2026 – 20:37:19 UTC	5 months ago	411698842191120821	
+6 January 2026 – 20:00:00 UTC	5 months ago	1057469004193325200	
+10 December 2025 – 14:19:07 UTC	6 months ago	6274918920265238195	
+25 November 2025 – 18:32:51 UTC	7 months ago	6651163619597716209	
+Please sign in via Steam to view more entries
+Steam data for everyone since 2012
+Support us by donating or becoming a sponsor
+ ABOUT
+Blog
+Discord
+Discord Bot
+FAQ & help
+Donate & contribute
+Browser extension
+ DISCOVERY
+Sales & Deals
+Upcoming releases
+Release calendar
+Free promotions
+Bundles
+Price changes
+When is next sale?
+ TOOLS
+Charts
+Calculator
+Patch notes
+Search
+Instant search
+Steam Status
+Steam Web API
+ DATABASE
+Game tags
+Developers
+Publishers
+Badges leaderboard
+Engines & technologies
+Game releases by year
+Change history
+ RANKINGS
+Top rated games
+Global top sellers
+Weekly top sellers
+Most followed games
+Most wishlisted games
+Wishlist activity
+Daily active users
+ ACCOUNT
+Sign in via Steam
+Free packages
+
+SteamDB is a hobby project and is not affiliated with Valve or Steam. All times on the site are UTC. Fair use disclaimer · Privacy
+
+Steam and the Steam logo are trademarks of Valve Corporation. All other trademarks are property of their respective owners.
+
+   

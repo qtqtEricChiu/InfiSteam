@@ -1,5 +1,95 @@
 ﻿# 无限暖暖 Steam 壳管理工具 - 更新日志
 
+## v5.1.2 — WinUI 3 稳定性修复 + 构建脚本优化
+
+### 修复
+- **WinUI 3 启动崩溃（0xC000027B）**：排查并修复多项导致 XAML 内部异常的问题
+  - `BitmapImage` 不支持 `.ico` 格式 → `LoadAppIcon()` 改用 `AppWindow.SetIcon()` + `ico.png`
+  - XAML 中 `LayerOnMicaBaseAltFillColorDefaultBrush` 资源初始化冲突 → 改用标准资源
+  - 扩展按钮从 XAML 静态声明改为 C# 代码动态创建，避免 XAML 解析异常
+  - `OnActivated` 中遗失 `if (_firstActivation)` 的闭合括号 → 补回
+  - 全局异常捕获：`Application.UnhandledException` + `AppDomain.CurrentDomain.UnhandledException`
+- **构建脚本 `build_all.bat`**：
+  - 选项 1/2/3 使用 `goto` 导致 `exit /b 0` 终止整个脚本 → 改为 `call :build`
+  - `chcp 65001` 编码问题导致中文乱码 → 输出全部改为英文
+  - `echo(` 语法在某些环境不支持 → 恢复为普通 `echo`
+  - `SetBusy()` 中引用已删除的 XAML 按钮名称 → 移除
+
+### 优化
+- **WinUI 3 扩展按钮**：版权声明、残留检查、骨架化、还原、网络诊断、报告等 6 个按钮由 XAML 转为 C# 动态生成，运行稳定
+- **WinUI 3 关于对话框**：图标从 FontIcon 换为 `ico.png`（BitmapImage 原生支持 PNG）
+- **构建脚本**：移除 `setlocal enabledelayedexpansion` 避免特殊字符冲突
+
+### 文件
+- `C#/InfiSteam.WinUI/ico.png` — 新增（窗口内图标显示用）
+- `C#/InfiSteam.WinUI/MainWindow.xaml` — 扩展功能区简化为空容器
+- `C#/InfiSteam.WinUI/MainWindow.xaml.cs` — `CreateExtensionButtons()` 动态生成按钮
+- `C#/InfiSteam.WinUI/App.xaml.cs` — 全局异常捕获
+
+---
+
+## v5.1.1 — 功能对齐 + 四版本同步 + Mica 背景
+
+### 新增
+- **Python GUI Pro（全新轻量化方案）**：移植自 C# WPF 的完整 Steam 检测、ACF 读取、版本类型判断、启动器检测功能，使用 customtkinter 现代界面
+- **新手引导系统**：标题栏 ❓ 按钮弹出功能说明对话框 + 按钮悬停 0.5s 自动显示 tooltip
+- **骨架化模拟（DryRun）**：预览骨架化操作结果但不实际执行
+- **版权声明**：按钮可手动查看，中/英根据系统语言独立显示
+- **残留文件检查**：检查 ACF 临时文件、残留备份、downloading/temp 目录中的游戏残留
+- **输出完整报告**：以独立窗口弹出，含路径/版本/ACF 状态/X6Game 位置/启动器检测
+- **网络诊断**：Ping 检测 steamdb.info / cloudflare.com / google.com
+- **统一构建脚本** `build_all.bat`：一键编译 Python GUI + C# WPF + C# WinUI 3
+- **Python GUI Mica 背景**：使用 DwmSetWindowAttribute + DwmExtendFrameIntoClientArea 实现 100% 云母效果
+- **Python GUI 响应式布局**：窗口 <720px 自动切换到窄屏模式，右栏可滚动
+
+### 功能对齐（四版本同步）
+| 功能 | Prompt | Python GUI | C# WPF | C# WinUI3 |
+|------|:------:|:----------:|:------:|:---------:|
+| Steam 路径检测 | ✅ | ✅ | ✅ | ✅ |
+| 多库支持 | ✅ | ✅ | ✅ | ✅ |
+| 版本类型检测(3路) | ✅ | ✅ | ✅ | ✅ |
+| 残留文件检查 | ✅ | ✅ 新 | ✅ 新 | ✅ 新 |
+| ACF 更新(含字段清零) | ✅ | ✅ | ✅ | ✅ |
+| BytesToStage/BytesStaged 清零 | ✅ | ✅ 新 | ✅ 新 | ✅ 新 |
+| 骨架化(移动X6Game) | ✅ | ✅ | ✅ 新 | ✅ 新 |
+| 还原(恢复X6Game) | ✅ | ✅ | ✅ 新 | ✅ 新 |
+| 骨架化模拟(DryRun) | — | ✅ | — | — |
+| 网络诊断 | ✅ | ✅ | ✅ 新 | ✅ 新 |
+| 输出完整报告 | ✅ | ✅ 新 | ✅ 新 | ✅ 新 |
+| 版权声明 | ✅ | ✅ 新 | ✅ 新 | ✅ 新 |
+
+### 修复
+- **WinUI 3 ContentDialog 冲突**：`ShowFirstRunGuide` + `ShowDisclaimer` 同时弹出导致 `0xC000027B` → 取消自动弹出版权声明
+- **WinUI 3 XAML 编译失败**：`FontIcon` 无效 Glyph 值导致编译器崩溃 → 改用纯 `TextBlock`
+- **WinUI 3 `Process` 未定义**：`AcfManager.cs` 缺少 `using System.Diagnostics;`
+- **WinUI 3 多余括号**：`BtnReport_Click` 尾部多余 `}` 导致 CS1022
+- **Python GUI 版本类型误判**：旧逻辑 `"3164332" in txt and "China" in txt` → 修复为三路检测（sub/1221922 / schinese / China.pak）
+- **Python GUI 子进程弹出 cmd 窗口**：添加 `_SUPPRESS` + `DETACHED_PROCESS` 三重隐藏
+- **构建脚本 `echo [1/3]` 错误解析**：方括号被误认为命令 → 全部替换为 `echo(`
+
+### 优化
+- **Python GUI 100% Mica 背景**：窗口完全透明 + DwmExtendFrameIntoClientArea，Mica 覆盖整个客户区
+- **Python GUI 响应式**：绑定 `<Configure>` 事件，<720px 自动切换窄屏按钮尺寸
+- **Python GUI 标题栏简洁化**：只显示 `InfiSteam`
+- **Python GUI 新窗口统一图标**：引导/声明/报告弹窗均设置 `ico.ico`
+- **Python GUI 报告弹窗**：`cmd_report()` 不再写入日志，弹出独立 680x500 窗口
+- **C# 版权声明双语分离**：根据 `CultureInfo.CurrentUICulture` 只显示对应语言
+- **C# 报告弹窗**：WPF 弹出独立 Window，WinUI 3 弹出 ContentDialog
+- **WinUI 3 新手引导**：新增侧栏按钮，允许用户反复查看
+
+### 文件
+- `source/infi-gui-pro.py` — Python GUI Pro（轻量化方案）
+- `source/C#_src/InfiSteam/` — C# WPF 完整源码（含所有新功能）
+- `source/C#_src/InfiSteam.WinUI/` — C# WinUI 3 完整源码
+- `source/AI_Prompt/` — AI Prompt 参考文件
+- `source/README.md` — 中文简介（v5.1 更新）
+- `source/readme_en.md` — 英文简介（v5.1 更新）
+- `source/readme_full.md` — 完整文档
+- `source/build_all.bat` — 统一构建脚本
+- `release/` — 三个版本的编译输出
+
+---
+
 ## v5.1 — Prompt 优化 + WinUI 3 修复 + 文件夹重构
 
 ### 新增
