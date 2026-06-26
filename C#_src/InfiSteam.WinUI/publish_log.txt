@@ -1,4 +1,0 @@
-  正在确定要还原的项目…
-  已还原 Q:\temp\InfiSteam.WinUI\InfiSteam.WinUI.csproj (用时 280 毫秒)。
-  InfiSteam.WinUI -> Q:\temp\InfiSteam.WinUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\InfiSteam.WinUI.dll
-  InfiSteam.WinUI -> Q:\temp\InfiSteam.WinUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\
