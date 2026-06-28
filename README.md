@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <sub>v5.1 新增：🎉 WinUI 3 现代版本上线 · AI Prompt Agent 行为规范 · 网络诊断 · Cloudflare 验证自动处理</sub>
+  <sub>v5.1.3 最新：📋 Prompt 通用化 · 绝区零/鸣潮兼容 · Executable 自动处理 · DX12 启动</sub>
 </p>
 
 <p align="center">
@@ -49,6 +49,14 @@
 从 [GitHub Releases](https://github.com/qtqtEricChiu/InfiSteam/releases) 下载 `steamdb-check-prompt-glo.md`，命令 OpenClaw、WorkBuddy、Marvis、QClaw 读取该文件，AI Agent 自动完成所有检测流程。<br />
 <sub>包含完整的 Agent 行为规范、Cloudflare 处理指导、网络诊断逻辑，最适合调试和自动化场景。</sub><br />
 <sub>~可能产生费用~</sub>
+
+> 🎉 **恭贺绝区零 Steam 版本 6月17日海外上线，特实现兼容**
+>
+> Prompt 已升级为多游戏通用架构，绝区零享有二级优先支持。SteamDB 数据获取、Executable 放置、ACF 同步、DX12 智能检测&建议一站完成。
+>
+> **为什么 AI Agent 更得心应手？** 为大型异服游戏提供高级启动全自动处理（除了在Steam内添加指令），AI Agent 可灵活处理注册表查询、文件放置、动态调参等分散任务，固定程序难以做到。
+>
+> <sub>⚠️ 仅限 AI Prompt 版本进行了兼容，其它程序版本未作处理。</sub>
 
 ### 方式二：C# 原生桌面程序
 
@@ -133,7 +141,7 @@ python infi-gui-pro.py
 
 <p align="center">
   <sub>
-    本工具与 <strong>叠纸游戏</strong> / <strong>Infold Games</strong>、<strong>SteamDB</strong> 以及 <strong>Valve Corporation</strong> 无关。<br />
+    本工具与 <strong>叠纸游戏</strong> / <strong>Infold Games</strong>、<strong>miHoYo</strong> / <strong>COGNOSPHERE PTE. LTD.</strong>、<strong>SteamDB</strong> 以及 <strong>Valve Corporation</strong> 无关。<br />
     无限暖暖 © 2022 Papergames, ALL RIGHTS RESERVED. Steam 为 Valve Corporation 的商标。
   </sub>
 </p>

@@ -11,7 +11,7 @@
 
 <p align="center">
   <sub>包括本文档及程序在内均包含AI辅助生成。不代表本人立场。</sub>
-  <sub>Version 5.1 &middot; WinUI 3 + WPF &middot; Fluent Design &middot; SteamDB Auto-Check &middot; ACF Anti-Update &middot; AI Agent Prompt</sub>
+  <sub>Version 5.1.3 &middot; Multi-Game Prompt &middot; ZZZ/WW Support &middot; Executable Auto-Handling &middot; DX12 Launch</sub>
 </p>
 
 ---

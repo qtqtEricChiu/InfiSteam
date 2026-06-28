@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <sub>v5.1 New: 🎉 WinUI 3 Modern Edition Released · AI Prompt Agent Guidelines · Network Diagnostics · Cloudflare Auto-Handling</sub>
+  <sub>v5.1.3 Latest: 📋 Multi-Game Prompt · Zenless Zone Zero/Wuthering Waves Support · Executable Auto-Handling · DX12 Startup</sub>
 </p>
 
 <p align="center">

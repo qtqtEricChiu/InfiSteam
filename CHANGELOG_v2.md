@@ -1,5 +1,32 @@
 ﻿# 无限暖暖 Steam 壳管理工具 - 更新日志
 
+## v5.1.3 — Prompt 通用化 + 多游戏兼容 + 绝区零支持
+
+### 新增
+- **Prompt 全面重写**：`steamdb-check-prompt-glo.md` 从无限暖暖专属升级为三阶通用体系
+  - 🥇 **无限暖暖**（一级）：完整功能，默认目标
+  - 🥈 **绝区零**（二级）：专属 HYP.exe 处理、3 种启动选项（含 DX12）、米哈游启动器路径检测
+  - 🥉 **其他游戏**（三级）：通用兼容，基础功能可用
+- **防呆设计**：非无限暖暖游戏时向用户声明产权归属（锁区等注意事项）
+- **多游戏适配**：
+  - 游戏目录名从 ACF `installdir` 字段读取，不硬编码
+  - AppID/SteamDB 链接未知时可向用户索要或搜索
+  - 启动器检测覆盖无限暖暖/绝区零/鸣潮
+- **Executable 体系**：
+  - 通过 SteamDB Config 页面获取 Launch Options - Executable
+  - Executable 缺失时四步通用处理（验证完整性 → 复制 → stub → 改 ACF）
+  - Stub 技术说明：必须用 `CreateProcess` + `WaitForSingleObject` 挂住进程
+- **启动器与游戏本体分离模式**：新增专节说明入口进程绑定原则
+- **骨架化通用化**：不再限于无限暖暖，其他游戏自动扫描最大子目录
+- **%游戏厂商名% 占位符**：免责声明自动适配发行商名称
+- **启动选项路径加引号**：所有路径用英文双引号包裹
+
+### 文件
+- `release/AI_Prompt_with_Powershell/steamdb-check-prompt-glo.md` — 完全重写，支持多游戏
+- `source/AI_Prompt/steamdb-check-prompt-glo.md` — 同步更新
+
+---
+
 ## v5.1.2 — WinUI 3 稳定性修复 + 构建脚本优化
 
 ### 修复
