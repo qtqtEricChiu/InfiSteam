@@ -214,15 +214,33 @@ Agent 先向用户索要 SteamDB 链接或 AppID。如果用户无法提供，Ag
 ### 5.2 启动 Chrome
 
 ```powershell
-$chromeExe = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-if (-not (Test-Path $chromeExe)) { $chromeExe = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" }
-if (-not (Test-Path $chromeExe)) { Write-Error "Chrome not found"; return }
+# 浏览器探测：Chrome → Edge → Brave（任一存在即可）
+$chromeCandidates = @(
+    "C:\Program Files\Google\Chrome\Application\chrome.exe",
+    "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    "C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    "${env:LOCALAPPDATA}\BraveSoftware\Brave-Browser\Application\brave.exe"
+)
+$chromeExe = $null
+foreach ($c in $chromeCandidates) { if (Test-Path $c) { $chromeExe = $c; break } }
+if (-not $chromeExe) { Write-Error "未找到 Chrome / Edge / Brave，请先安装浏览器"; return }
 
 $chromeProfileDir = Join-Path $PSScriptRoot "chrome-profile-steamdb"
 if (-not (Test-Path $chromeProfileDir)) { New-Item -ItemType Directory -Path $chromeProfileDir -Force | Out-Null }
 
+# 端口占用时自动 +1 步进，避免启动失败（9222-9299）
+$cdpPort = 9222
+while ($true) {
+    $occupied = Get-NetTCPConnection -LocalPort $cdpPort -ErrorAction SilentlyContinue
+    if (-not $occupied) { break }
+    $cdpPort++
+    if ($cdpPort -gt 9299) { Write-Error "9222-9299 端口均被占用，请释放后重试"; return }
+}
+
 Start-Process $chromeExe -ArgumentList @(
-    "--remote-debugging-port=9222", "--user-data-dir=`"$chromeProfileDir`"",
+    "--remote-debugging-port=$cdpPort", "--user-data-dir=`"$chromeProfileDir`"",
+    "--remote-allow-origins=*",
     "--no-first-run", "--no-default-browser-check",
     "https://steamdb.info/app/$AppID/depots/"
 ) -WindowStyle Normal
@@ -230,7 +248,7 @@ Start-Process $chromeExe -ArgumentList @(
 # 等待 CDP 就绪（最长 30 秒）
 $connected = $false
 for ($i = 0; $i -lt 30; $i++) {
-    try { $r = Invoke-RestMethod "http://127.0.0.1:9222/json/version" -ErrorAction Stop; $connected = $true; break }
+    try { $r = Invoke-RestMethod "http://127.0.0.1:$cdpPort/json/version" -ErrorAction Stop; $connected = $true; break }
     catch { Start-Sleep 1 }
 }
 if (-not $connected) { Test-NetworkConnectivity; return }
@@ -239,21 +257,37 @@ Start-Sleep 3
 
 ### 5.3 Cloudflare 验证
 
-检测到 `Checking your browser...` / `请稍候` 等过渡页时，自动等待验证完成（最长 120 秒，每 2 秒检测一次）。验证完成前禁止解析内容。
+SteamDB 由 Cloudflare 防护，首次或风控访问会弹出 Turnstile 人机验证（interactive challenge）。本流程必须使用**可见 Chrome 窗口**（5.2 已以非无头模式启动并开启远程调试端口），**禁止 headless**。
+
+**检测方式**：通过 CDP 读取页面标题/正文，若包含 `Checking your browser...` / `请稍候` / `Just a moment` / `Verify you are human` 等字样，即判定为 Cloudflare 拦截。
+
+**处理流程**：
+1. 一旦检测到 Turnstile interactive 验证，**立即通知用户**：「SteamDB 触发了 Cloudflare 人机验证，请在弹出的 Chrome 窗口中手动完成验证（勾选/点击验证框），完成后我会自动继续。」随后每 2 秒检测一次页面标题是否恢复正常（最长 120 秒）。
+2. 验证完成、页面标题恢复为游戏名 / Depots 后，再开始解析内容；验证完成前**禁止**解析或提取任何数据。
+3. 若 120 秒内用户仍未完成，提示用户手动刷新页面或重启本流程，不要无提示挂死。
 
 ### 5.4 通过 CDP 获取数据
 
 ```powershell
-# 使用 Python 脚本通过 WebSocket 连接 Chrome CDP
+# 统一临时文件目录（兼容 .ps1 脚本与内联执行两种场景）
+$ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { $PWD.Path }
+
+# 使用 Python 脚本通过 WebSocket 连接 Chrome CDP（端口与 5.2 保持一致）
 $pythonScript = @"
-import asyncio, websockets, json, urllib.request, os
+import asyncio, json, urllib.request, os
+try:
+    import websockets
+except ImportError:
+    import subprocess, sys
+    subprocess.run([sys.executable, "-m", "pip", "install", "websockets"], check=True)
+    import websockets
 
 async def get_data(dir):
-    with urllib.request.urlopen('http://127.0.0.1:9222/json/list') as r:
+    with urllib.request.urlopen('http://127.0.0.1:$cdpPort/json/list') as r:
         pages = json.loads(r.read())
         p = [x for x in pages if 'steamdb' in x['url']] or pages
         pid = p[0]['id']
-    async with websockets.connect(f'ws://127.0.0.1:9222/devtools/page/{pid}') as ws:
+    async with websockets.connect(f'ws://127.0.0.1:$cdpPort/devtools/page/{pid}') as ws:
         # Depots
         await ws.send(json.dumps({'id':1,'method':'Runtime.evaluate',
             'params':{'expression':'document.body.innerText'}}))
@@ -291,8 +325,20 @@ $configText = Get-Content (Join-Path $ScriptDir "steamdb_config.txt") -Raw
 
 # BuildID
 $steamdbBuildID = [regex]::Match($depotsText, 'public\s+(\d+)').Groups[1].Value
+# 正则未命中（SteamDB Depots 页面 DOM/文本结构变化时常见）→ 降级使用本地 ACF 的 buildid
+# （反更新本就锁定当前已安装版本，本地 buildid 完全合法）
+if (-not ($steamdbBuildID -match '^\d+$')) {
+    Write-Warning "未能从 SteamDB Depots 页面解析到 BuildID（页面结构变化），回退使用本地 ACF 的 buildid"
+    $steamdbBuildID = [regex]::Match($acfContent, '"buildid"\s+"(\d+)"').Groups[1].Value
+}
+if (-not ($steamdbBuildID -match '^\d+$')) {
+    Write-Error "本地 ACF 也未读取到有效 buildid，流程终止"; return
+}
 # Manifest GID
 $steamdbManifest = [regex]::Match($manifestsText, '\d{19}').Groups[1].Value
+if (-not ($steamdbManifest -match '^\d{19}$')) {
+    Write-Warning "未能从 SteamDB Manifests 页面解析到 Manifest GID，请人工核对后再继续"
+}
 # Executable（从 Config 页面的 "executable" 或 "Executable" 字段提取）
 $executable = [regex]::Match($configText, '"executable"\s+"([^"]+)"').Groups[1].Value
 if (-not $executable) {
@@ -318,7 +364,7 @@ if (-not $executable) {
 ```powershell
 $exePath = Join-Path $gameDir $executable
 if (-not (Test-Path $exePath)) {
-    Write-Warn "缺少可执行文件: $exePath — 将无法在 Steam 内启动"
+    Write-Warning "缺少可执行文件: $exePath — 将无法在 Steam 内启动"
 }
 ```
 
@@ -403,6 +449,8 @@ $acf = $acf -replace "("$DepotID"\s*\{\s*"manifest"\s+")\d+(")", "`${1}$steamdbM
 $acf = $acf -replace '("TargetBuildID"\s+")\d+(")', '${1}0$2'
 # StateFlags → 4
 $acf = $acf -replace '("StateFlags"\s+")\d+(")', '${1}4$2'
+# AutoUpdateBehavior → 1（等到启动游戏时更新，与第十步校验一致）
+$acf = $acf -replace '("AutoUpdateBehavior"\s+")\d+(")', '${1}1$2'
 # 下载/暂存字段清零
 @("BytesToDownload","BytesDownloaded","BytesToStage","BytesStaged") | ForEach-Object {
     $acf = $acf -replace """$_\""\s+""\d+""", """$_""		""0"""
@@ -634,7 +682,7 @@ Move-Item $backupDir $sourceDir
 
 ```powershell
 Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" | Where-Object {
-    $_.CommandLine -match 'remote-debugging-port=9222' -and $_.CommandLine -match 'chrome-profile-steamdb'
+    $_.CommandLine -match 'chrome-profile-steamdb'
 } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 ```
 
